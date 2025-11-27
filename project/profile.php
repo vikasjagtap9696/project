@@ -3,7 +3,7 @@ session_start();
 include('db.php');
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header("Location: login.php");
     exit;
 }
 
@@ -13,27 +13,35 @@ $limit = 3;
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($page - 1) * $limit;
 
-/*  REMOVE FAVORITE PRODUCT  */
+/* ----------------------------------------
+   REMOVE FAVORITE ITEM
+-------------------------------------------*/
 if (isset($_GET['remove_fav']) && isset($_GET['product_id'])) {
     $pid = intval($_GET['product_id']);
-    try {
-        $stmt = $conn->prepare("DELETE FROM favorites WHERE user_id = :uid AND product_id = :pid");
-        $stmt->execute([':uid' => $user_id, ':pid' => $pid]);
-    } catch (PDOException $e) {}
+
+    $stmt = $conn->prepare("DELETE FROM favorites WHERE user_id=:uid AND product_id=:pid");
+    $stmt->execute([':uid' => $user_id, ':pid' => $pid]);
 
     header("Location: profile.php?tab=favorites&page=$page");
     exit;
 }
 
-/* USER DATA */
+/* ----------------------------------------
+   FETCH USER
+-------------------------------------------*/
 $stmt = $conn->prepare("SELECT * FROM users WHERE user_id=:id");
 $stmt->execute([':id' => $user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-/* FIXED ADDRESS BOOK */
-$address_book = !empty($user['address_book'])
-    ? json_decode($user['address_book'], true)
-    : [];
+/* ############# FIXED ADDRESS DECODE ############# */
+$address_json = $user['address_book'] ?? '';
+
+if ($address_json !== '' && $address_json !== null) {
+    $decoded = json_decode($address_json, true);
+    $address_book = is_array($decoded) ? $decoded : [];
+} else {
+    $address_book = [];
+}
 
 $default_address = $address_book[0] ?? [
     'line1' => '',
@@ -42,45 +50,41 @@ $default_address = $address_book[0] ?? [
     'pincode' => ''
 ];
 
-/************************************
- FAVORITES  
-*************************************/
+/* ----------------------------------------
+   FAVORITES
+-------------------------------------------*/
 $favorites = [];
-$total_favorites = 0;
-$total_fav_pages = 1;
+$stmt = $conn->prepare("SELECT COUNT(*) AS total FROM favorites WHERE user_id=:uid");
+$stmt->execute([':uid' => $user_id]);
+$total_favorites = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-try {
-    $stmt = $conn->prepare("SELECT COUNT(product_id) AS total FROM favorites WHERE user_id = :uid");
-    $stmt->execute([':uid' => $user_id]);
-    $total_favorites = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+$total_fav_pages = max(1, ceil($total_favorites / $limit));
 
-    $total_fav_pages = max(1, ceil($total_favorites / $limit));
+$sql_fav = "
+    SELECT p.*, f.added_at
+    FROM favorites f
+    JOIN products p ON p.product_id = f.product_id
+    WHERE f.user_id = :uid
+    ORDER BY f.added_at DESC
+    LIMIT :limit OFFSET :offset
+";
 
-    $sql_fav = "
-        SELECT p.*, f.added_at
-        FROM favorites f
-        JOIN products p ON p.product_id = f.product_id
-        WHERE f.user_id = :uid
-        ORDER BY f.added_at DESC
-        LIMIT :limit OFFSET :offset
-    ";
+$stmt = $conn->prepare($sql_fav);
+$stmt->bindValue(':uid', $user_id, PDO::PARAM_INT);
+$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 
-    $stmt = $conn->prepare($sql_fav);
-    $stmt->bindValue(':uid', $user_id, PDO::PARAM_INT);
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
+$favorites = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $favorites = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-} catch (PDOException $e) {}
-
-/************************************
- ORDERS 
-*************************************/
+/* ----------------------------------------
+   ORDERS
+-------------------------------------------*/
 $stmt = $conn->prepare("SELECT COUNT(DISTINCT order_id) AS total FROM orders WHERE user_id=:uid");
 $stmt->execute([':uid' => $user_id]);
 $total_orders = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
 $total_order_pages = max(1, ceil($total_orders / $limit));
 
 $sql = "
@@ -112,15 +116,16 @@ $stmt->execute();
 $orders_raw = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $orders = [];
+
 foreach ($orders_raw as $o) {
     $oid = $o['order_id'];
 
     if (!isset($orders[$oid])) {
         $addr = [];
+
         if (!empty($o['shipping_address'])) {
-            $addr = is_string($o['shipping_address'])
-                ? (json_decode($o['shipping_address'], true) ?? [])
-                : $o['shipping_address'];
+            $temp = json_decode($o['shipping_address'], true);
+            $addr = is_array($temp) ? $temp : [];
         }
 
         $orders[$oid] = [
@@ -142,3 +147,4 @@ foreach ($orders_raw as $o) {
     ];
 }
 ?>
+
