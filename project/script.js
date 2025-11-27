@@ -1,17 +1,12 @@
-// ==============================
-// 🧠 AJAX + UI Interaction Script
-// ==============================
 
-// --- Message Display Function ---
 function showMessage(msg, type = 'success') {
   const msgEl = document.getElementById('ajax-message');
   msgEl.innerHTML = msg;
-  msgEl.style.display = 'block'; // div दिसेल (display:none → block)
-  msgEl.classList.remove('success', 'error'); // मागचे प्रकार काढून टाका
-  msgEl.classList.add(type); // नवीन प्रकार class जोडा (success/error)
-  msgEl.classList.add('show'); // Show animation साठी
+  msgEl.style.display = 'block'; 
+  msgEl.classList.remove('success', 'error'); 
+  msgEl.classList.add(type); 
+  msgEl.classList.add('show'); 
 
-  // --- Success vs Error Styling ---
   if (type === 'success') {
     msgEl.style.backgroundColor = '#e6f7d9';
     msgEl.style.color = '#4b8b4c';
@@ -22,18 +17,15 @@ function showMessage(msg, type = 'success') {
     msgEl.style.borderLeftColor = '#8d4b4b';
   }
 
-  // 3 सेकंदांनी message गायब होईल
   setTimeout(() => {
     msgEl.classList.remove('show');
     setTimeout(() => { msgEl.style.display = 'none'; }, 500);
   }, 3000);
 }
 
-// --- Filters Auto Submit Logic ---
 ['metal', 'style', 'occasion', 'collection'].forEach(id => {
   const element = document.getElementById(id);
 
-  // जर element अस्तित्वात असेल तर 'change' इव्हेंट वर filterProducts() कॉल करा
   if (element) {
     element.addEventListener('change', () => {
       filterProducts();
@@ -41,7 +33,6 @@ function showMessage(msg, type = 'success') {
   }
 });
 
-// --- Search Filter (keyup + debounce) ---
 const searchInput = document.getElementById('search');
 if (searchInput) {
   searchInput.addEventListener('keyup', debounce(() => {
@@ -50,7 +41,6 @@ if (searchInput) {
   }, 2000));
 }
 
-// --- Debounce Function ---
 function debounce(func, delay) {
   let timeout;
   return function () {
@@ -61,7 +51,6 @@ function debounce(func, delay) {
   };
 }
 
-// --- Filter Function (URL parameters update करून redirect करते) ---
 function filterProducts() {
   let params = new URLSearchParams();
   const fields = [
@@ -78,11 +67,9 @@ function filterProducts() {
     if (value) { params.set(field.key, value); }
   });
 
-  // Filters लागू करून products.php वर redirect करा
   window.location.href = 'products.php?' + params.toString();
 }
 
-// --- Heart Icon (Favorite) Click Handler ---
 document.querySelectorAll('.fav-icon').forEach(el => {
   el.addEventListener('click', (e) => {
     e.preventDefault();
@@ -91,7 +78,7 @@ document.querySelectorAll('.fav-icon').forEach(el => {
     let card = el.closest('.product-card');
     let pid = card.dataset.id;
 
-    el.style.pointerEvents = 'none'; // Double click टाळण्यासाठी disable करा
+    el.style.pointerEvents = 'none'; 
 
     fetch('index1.php?fav_id=' + pid)
       .then(res => res.json())
@@ -105,13 +92,12 @@ document.querySelectorAll('.fav-icon').forEach(el => {
           el.classList.remove('is-favorite');
           showMessage(data.message);
         } else {
-          // Error किंवा Login Required
           showMessage(data.message, 'error');
         }
       })
       .catch(() => showMessage("❌ Network error. Please try again.", 'error'))
       .finally(() => {
-        el.style.pointerEvents = 'auto'; // पुन्हा सक्षम करा
+        el.style.pointerEvents = 'auto'; 
       });
   });
 });
@@ -123,7 +109,7 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
     e.stopPropagation();
 
     const productId = btn.dataset.id;
-    btn.disabled = true; // Fetch दरम्यान button disable करा
+    btn.disabled = true; 
 
     fetch(`index1.php?add_to_cart_ajax=${productId}`)
       .then(res => res.json())
@@ -133,14 +119,12 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
         if (data.status === 'success') {
           showMessage(data.message);
 
-          // Navigation मधील Cart Count अपडेट करा
           const count = data.cart_count;
           const navLink = document.getElementById('cart-nav-link');
 
           if (navLink) {
             let navBadge = navLink.querySelector('.cart-badge');
 
-            // जर badge नसेल तर तयार करा
             if (!navBadge) {
               navBadge = document.createElement('span');
               navBadge.className = 'cart-badge';
@@ -151,7 +135,6 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
             navBadge.textContent = count;
           }
         } else {
-          // Login Required किंवा इतर Error
           showMessage(data.message, 'error');
         }
       })
@@ -162,11 +145,9 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
   });
 });
 
-// --- Auto-Slide Product Image Gallery (Hover Effect) ---
 document.querySelectorAll('.product-card').forEach(card => {
   let allImages = JSON.parse(card.getAttribute('data-gallery') || '[]') || [];
 
-  // रिकामे URLs वगळा
   allImages = allImages.filter(url => url && url.trim() !== '');
 
   if (allImages.length <= 1) return;
@@ -177,19 +158,16 @@ document.querySelectorAll('.product-card').forEach(card => {
   let next = card.querySelector('.next');
   let slideInterval;
 
-  // Image अपडेट करणारी function
   const updateImage = (newIndex) => {
     index = (newIndex + allImages.length) % allImages.length;
     mainImg.src = allImages[index];
   };
 
-  // Auto Slide सुरू करा
   const startSlide = () => {
     clearInterval(slideInterval);
     slideInterval = setInterval(() => { updateImage(index + 1); }, 2000);
   };
 
-  // Auto Slide थांबवा
   const stopSlide = () => {
     clearInterval(slideInterval);
   };
@@ -197,7 +175,6 @@ document.querySelectorAll('.product-card').forEach(card => {
   card.addEventListener('mouseenter', startSlide);
   card.addEventListener('mouseleave', stopSlide);
 
-  // Manual navigation
   if (prev) {
     prev.addEventListener('click', (e) => {
       e.stopPropagation();

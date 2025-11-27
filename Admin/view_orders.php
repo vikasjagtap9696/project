@@ -1,13 +1,13 @@
 <?php
-// FIX: $pdo chya jagi $conn vaparala
+
 include("../project/db.php");
 
 
-// Update order status
+
 if(isset($_POST['update_status'])){
     $order_id = $_POST['order_id'];
     $status = $_POST['status'];
-    // FIX: $pdo chya jagi $conn vaparala
+    
     $stmt = $conn->prepare("UPDATE orders SET status=:status WHERE order_id=:order_id");
     $stmt->bindParam(':status', $status);
     $stmt->bindParam(':order_id', $order_id, PDO::PARAM_INT);
@@ -19,8 +19,7 @@ if(isset($_POST['update_status'])){
     }
 }
 
-// Fetch all orders
-// FIX: $pdo chya jagi $conn vaparala
+
 $stmt = $conn->query("SELECT * FROM orders ORDER BY order_id ASC");
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>

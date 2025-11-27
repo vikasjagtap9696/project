@@ -1,15 +1,15 @@
 <?php
-// db.php file madhe $conn connection object ahe.
+
 include("../project/db.php");
 
 
-// Initialize $msg variable
+
 $msg = "";
 
-// Delete user
+
 if(isset($_GET['delete'])){
     $id = $_GET['delete'];
-    // FIX: $pdo chya jagi $conn vaparla
+   
     $stmt = $conn->prepare("DELETE FROM users WHERE user_id=:id");
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     try {
@@ -20,8 +20,7 @@ if(isset($_GET['delete'])){
     }
 }
 
-// Fetch users
-// FIX: $pdo chya jagi $conn vaparla
+
 $stmt = $conn->query("SELECT * FROM users ORDER BY user_id ASC");
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>

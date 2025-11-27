@@ -1,12 +1,11 @@
 <?php
 session_start();
-// For a fully functional form, you would process the POST request here 
-// (e.g., send an email, save to DB). For this example, we'll keep the logic simple.
+
 
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_contact'])) {
-    // Basic form validation and simulated processing
+    
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $subject = trim($_POST['subject'] ?? '');
@@ -15,14 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_contact'])) {
     if (empty($name) || empty($email) || empty($query)) {
         $message = '<div class="alert error">Please fill in all required fields.</div>';
     } else {
-        // --- Simulate Email Sending/DB Save ---
-        // In a real application, you would use PHP mail() or a mail library (PHPMailer) here.
         
-        // Success message
         $message = '<div class="alert success">Thank you, ' . htmlspecialchars($name) . '! Your query has been received. We will respond to ' . htmlspecialchars($email) . ' within 24 hours.</div>';
         
-        // Clear fields (optional: uncomment below lines if you want the form to clear)
-        // $_POST = array(); 
+        
     }
 }
 ?>
@@ -246,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_contact'])) {
     <div class="container">
         <h1>Connect with SuvarnaKart Support</h1>
         
-        <?php echo $message; // Display success or error message ?>
+        <?php echo $message; 
 
         <div class="contact-grid">
             

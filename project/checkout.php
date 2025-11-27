@@ -5,7 +5,7 @@ include('db.php');
 $user_id = $_SESSION['user_id'] ?? 1;
 $product_id = intval($_GET['product_id'] ?? 0);
 if (!$product_id) {
-    header("Location:index.php");
+    header("Location:index1.php");
     exit;
 }
 
@@ -17,8 +17,7 @@ if (!$product)
 
 $quantity = max(1, intval($_POST['quantity'] ?? 1));
 $total_amount = $product['price'] * $quantity;
-//click after place order
-//process payment and order
+
 
 $error = '';
  if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['place_order'])) 
@@ -361,8 +360,8 @@ $error = '';
                         <label>Payment Method</label>
                         <i class="fas fa-credit-card"></i>
                         <select name="payment_method" required>
-                            <option value="Razorpay">💳 Pay Online (UPI/Card/Wallet)</option>
-                            <option value="COD">💵 Cash on Delivery</option>
+                            <option value="Razorpay"> Pay Online (UPI/Card/Wallet)</option>
+                            <option value="COD">Cash on Delivery</option>
                         </select>
                     </div>
 
@@ -419,14 +418,14 @@ $error = '';
         ?>
         <script>
             var options = {
-                "key": "rzp_test_RVowQdE4X3ETgJ",  // 🔑 Replace with your test/live key
+                "key": "rzp_test_RVowQdE4X3ETgJ",  
                 "amount": "<?= $total_amount * 100 ?>",
                 "currency": "INR",
                 "name": "SuvarnaKart",
                 "description": "Gold Purchase - Order #<?= $order_id ?>",
                 "image": "https://yourwebsite.com/logo.png",
                 "handler": function (response) {
-                    // Success झाल्यावर payment_process.php कडे पाठव
+                   
                     var form = document.createElement('form');
                     form.method = 'POST';
                     form.action = 'payment_process.php';

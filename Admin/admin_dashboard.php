@@ -1,12 +1,8 @@
 <?php
-// db.php file include kara. Connection variable $conn ahe.
+
 include("../project/db.php");
 
-// ---------------------------------------------------
-// 1. Fetch Summary Data (Dashboard Cards sathi)
-// ---------------------------------------------------
-// Note: Dashboard data ha main page var display zala pahije.
-// Tya sathi dashboard chi summary ithech fetch karu.
+
 try {
     // Total Products
     $stmt_products = $conn->query("SELECT COUNT(*) AS total_products FROM products");
@@ -23,29 +19,26 @@ try {
     $counts = $stmt_users->fetch(PDO::FETCH_ASSOC);
     $total_users = $counts['total_users'];
     
-    // Recent Orders (Fakt Dashboard display sathi)
+    // Recent Orders 
     $stmt_recent_orders = $conn->query("SELECT order_id, total_amount, status, order_date FROM orders ORDER BY order_date DESC LIMIT 5");
     $recent_orders = $stmt_recent_orders->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    // Database connection chukicha zala tar error disel
+    
     $db_error = "Database Error: " . $e->getMessage();
     $total_products = $total_orders = $total_users = 'N/A';
     $recent_orders = [];
 }
 
-// Default content URL (jevha dashboard first time open hoto)
-$default_page = 'dashboard_summary.php'; 
-// Note: Tumhala navin 'dashboard_summary.php' file banvavi lagel, 
-// jyat khali diela main content (cards ani recent orders) asel. 
-// Pan sadhya sathi, apan 'view_products.php' as default thevu.
+
+
 $default_page = 'view_products.php'; 
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Dashboard | Gattu Goldshop</title>
+    <title>Admin Dashboard |  Goldshop</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -165,21 +158,20 @@ $default_page = 'view_products.php';
     </div>
     
     <script>
-        // Sidebar link active karanyasathi JavaScript (optional but good for UX)
+      
         document.addEventListener('DOMContentLoaded', () => {
             const sidebarLinks = document.querySelectorAll('.sidebar ul li a');
 
             sidebarLinks.forEach(link => {
                 link.addEventListener('click', function() {
-                    // Remove 'active' class from all links
+                    
                     sidebarLinks.forEach(l => l.classList.remove('active'));
                     
-                    // Add 'active' class to the clicked link
                     this.classList.add('active');
                 });
             });
             
-            // Jevha page load hoto, ti link active thevaychi
+            
             const currentUrl = document.getElementById('content-iframe').src.split('/').pop();
             sidebarLinks.forEach(link => {
                 if (link.getAttribute('href') === currentUrl) {

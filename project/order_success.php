@@ -9,7 +9,7 @@ if (!$order_id) {
     die("Invalid Order ID");
 }
 
-// fetch order items (multiple products)
+
 $stmt = $conn->prepare("
     SELECT o.order_id, o.total_amount, o.status, o.payment_method, 
            o.shipping_address, o.created_at,
@@ -25,12 +25,13 @@ $order_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 if (!$order_items)
     die("Order not found.");
 
-// decode address
+
 $address = json_decode($order_items[0]['shipping_address'], true);
 $total_amount = $order_items[0]['total_amount'];
 $order_status = $order_items[0]['status'];
 $created_at = $order_items[0]['created_at'];
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 

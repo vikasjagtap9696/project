@@ -1,60 +1,48 @@
 <?php
-// cart.php
-// Shopping cart page (database-backed). Shows items in the logged-in
-// user's cart, allows removal of items, and provides a summary/checkout.
 
 session_start();
 
-// Include database connection. db.php must set up a PDO instance in $conn.
 include('db.php');
 
-// --- USER ID: get logged-in user id from session or null if not set ---
 $user_id = $_SESSION['user_id'] ?? null;
 
-// -----------------------------------------------------------
-// 1) Handle item removal POST request
-//    If the form submits 'remove_id', delete that product from the
-//    current user's cart and set a session message for feedback.
-// -----------------------------------------------------------
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_id'])) {
-    // Cast remove_id to integer for safety
+    
     $remove_id = intval($_POST['remove_id']);
 
     if ($user_id) {
         try {
-            // Prepare and execute DELETE statement
+           
             $delete_sql = "DELETE FROM cart WHERE user_id = :uid AND product_id = :pid";
             $stmt = $conn->prepare($delete_sql);
             $stmt->execute([':uid' => $user_id, ':pid' => $remove_id]);
 
-            // Success message stored in session (will be shown once)
+           
             $_SESSION['message'] = "✅ Product removed from cart.";
         } catch (PDOException $e) {
-            // On DB error, set error message
+            
             $_SESSION['message'] = "❌ Database Error: Could not remove item.";
         }
     } else {
-        // Not logged in — prompt login
+        
         $_SESSION['message'] = "❌ Please login to manage your cart.";
     }
 
-    // Redirect to same page to avoid resubmission (Post/Redirect/Get)
+    
     header('Location: cart.php');
     exit;
 }
 
 
-// -----------------------------------------------------------
-// 2) Retrieve cart items from database
-//    Build $products_in_cart array with product data + subtotal
-//    and compute grand total in $total.
-// -----------------------------------------------------------
+
 $products_in_cart = [];
 $total = 0.0;
 
-if ($user_id) {
+if ($user_id)
+	{
     try {
-        // Query cart rows joined with product details
+        
         $sql = "SELECT p.product_id, p.name, p.price, p.image_url_main, c.quantity
                 FROM cart c
                 JOIN products p ON c.product_id = p.product_id
@@ -65,20 +53,21 @@ if ($user_id) {
         $stmt->execute([':uid' => $user_id]);
         $db_products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Loop through results, compute subtotal, and accumulate total
-        foreach ($db_products as $product) {
+       
+        foreach ($db_products as $product) 
+		{
             $product['subtotal'] = (float) $product['price'] * (int) $product['quantity'];
             $total += $product['subtotal'];
             $products_in_cart[] = $product;
         }
     } catch (PDOException $e) {
-        // On error, clear products and set an error message
+       
         $products_in_cart = [];
         $_SESSION['message'] = "❌ Error fetching cart data from database.";
     }
 }
 
-// Retrieve and clear any one-time flash message
+
 $message = $_SESSION['message'] ?? null;
 unset($_SESSION['message']);
 ?>
@@ -447,7 +436,7 @@ unset($_SESSION['message']);
 
                     <div class="total">Total: ₹<?php echo number_format($total); ?></div>
 
-                    <!-- Checkout form: send user to checkout for all cart items -->
+                  
                     <form action="checkout.php" method="POST">
                         <button type="submit" class="checkout-btn"><i class="fas fa-credit-card"></i> Proceed to Checkout
                             (All Items)</button>
@@ -458,14 +447,15 @@ unset($_SESSION['message']);
             </div>
 
         <?php elseif ($user_id): ?>
-            <!-- Logged in but cart empty -->
+          
             <p>Your cart is empty. <a href="index1.php" style="color: var(--primary-color); font-weight: 600;">Continue
                     Shopping</a></p>
         <?php endif; ?>
 
     </div>
 
-    <?php // Footer intentionally omitted here; include if available: include 'footer.php'; ?>
+    <?php
+	include 'footer.php'; ?>
 
 </body>
 

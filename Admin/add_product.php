@@ -1,16 +1,13 @@
 <?php
-// PostgreSQL PDO connection (db.php मध्ये $conn = new PDO(); असणे आवश्यक)
+
 include("../project/db.php");
 
-$upload_dir = "../uploads/";  // ROOT/project/uploads/
-if (!is_dir($upload_dir))
-    mkdir($upload_dir, 0755, true);
+$upload_dir = "../uploads/";  
+    //mkdir($upload_dir, 0755, true);
 
 $msg = "";
 
-// ---------------------------------------------
-// FORM SUBMIT
-// ---------------------------------------------
+
 if (isset($_POST['submit'])) {
 
     $name = trim($_POST['name']);
@@ -28,26 +25,21 @@ if (isset($_POST['submit'])) {
         $msg = "<p class='error'>⚠ Required fields missing</p>";
     } else {
 
-        // ---------------------------------------------
-        // MAIN IMAGE UPLOAD (ORIGINAL NAME + REPLACE)
-        // ---------------------------------------------
+       
         $image_url_main = null;
 
         if (!empty($_FILES['image_main']['name'])) {
 
-            $original_name = $_FILES['image_main']['name'];  // ORIGINAL FILE NAME
-            $target = $upload_dir . $original_name;          // FULL PATH
-
-            // Upload (replace if exists)
+            $original_name = $_FILES['image_main']['name'];  
+            $target = $upload_dir . $original_name;          
+           
             move_uploaded_file($_FILES['image_main']['tmp_name'], $target);
 
-            // Correct path for DB (front/admin both)
+           
             $image_url_main = "../uploads/" . $original_name;
         }
 
-        // ---------------------------------------------
-        // GALLERY IMAGES UPLOAD
-        // ---------------------------------------------
+        
         $gallery_urls = [];
         $images_gallery_pg = "{}";
 
@@ -66,14 +58,12 @@ if (isset($_POST['submit'])) {
                 }
             }
 
-            // Convert to PostgreSQL array
+            
             $quoted = array_map(fn($x) => '"' . $x . '"', $gallery_urls);
             $images_gallery_pg = '{' . implode(",", $quoted) . '}';
         }
 
-        // ---------------------------------------------
-        // DB INSERT
-        // ---------------------------------------------
+        
         $sql = "INSERT INTO products 
         (name, description, price, weight_grams, metal_type, design_style, occasion,
          is_trending, collection_key, image_url_main, images_gallery, stock_quantity)
@@ -83,7 +73,7 @@ if (isset($_POST['submit'])) {
 
         $stmt = $conn->prepare($sql);
 
-        // Bind values
+        
         $stmt->bindParam(":name", $name);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":price", $price);
@@ -100,7 +90,7 @@ if (isset($_POST['submit'])) {
         try {
             $stmt->execute();
             $msg = "<p class='success'>✅ Product Added Successfully!</p>";
-            $_POST = [];  // clear form
+            $_POST = [];  
         } catch (PDOException $e) {
             $msg = "<p class='error'>❌ DB Error: " . $e->getMessage() . "</p>";
         }

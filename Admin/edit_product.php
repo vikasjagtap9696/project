@@ -1,46 +1,42 @@
 <?php
-// db.php फाईलमध्ये $conn हे कनेक्शन ऑब्जेक्ट वापरले आहे असे गृहीत धरून:include("../project/db.php");
+
 include("../project/db.php");
 
-//include("../uploads");
-// 🚨🚨 महत्त्वाची सूचना: फक्त खालील दोन ओळी बदला 🚨🚨
-$upload_dir = "../uploads/"; // <--- तुमच्या संरचनेनुसार 'uploads/' किंवा '../uploads/' ठेवा! 
-$BASE_UPLOAD_PATH = "../uploads/"; // <--- तुमच्या संरचनेनुसार "/admin/uploads/" किंवा "/uploads/" ठेवा! 
-// 🚨🚨 (फक्त वरच्या दोन ओळी बदला, बाकीचा कोड डायनॅमिकली काम करेल) 🚨🚨
+
+$upload_dir = "../uploads/"; 
+$BASE_UPLOAD_PATH = "../uploads/"; 
+
 
 if(!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
 
 $msg = "";
 $product = null;
-// URL मधून product ID मिळवणे आणि ते int मध्ये रूपांतरित करणे
+
 $product_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// ----------------------------------------------------
-// 1. FETCH CURRENT PRODUCT DATA
-// ----------------------------------------------------
+
 if ($product_id > 0) {
-    // FIX: $pdo chya jagi $conn vaparala
+    
     $stmt = $conn->prepare("SELECT * FROM products WHERE product_id = :id");
     $stmt->bindParam(':id', $product_id, PDO::PARAM_INT);
     $stmt->execute();
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$product) {
-        // ID अवैध असल्यास, view_products पेजवर रीडायरेक्ट करा
+        
         header('Location: view_products.php');
         exit;
     }
 } else {
-    // ID न दिल्यास, view_products पेजवर रीडायरेक्ट करा
+    
     header('Location: view_products.php');
     exit;
 }
 
-// ----------------------------------------------------
-// 2. HANDLE UPDATE (POST REQUEST)
-// ----------------------------------------------------
+
 if (isset($_POST['update_product'])) {
     // Retrieve form data
+	
     $name = $_POST['name'];
     $description = $_POST['description'];
     $price = $_POST['price'];
@@ -52,80 +48,83 @@ if (isset($_POST['update_product'])) {
     $collection_key = $_POST['collection_key'];
     $stock_quantity = $_POST['stock_quantity'];
 
-    // Use current DB values as fallback for images
+   
     $image_url_main = $product['image_url_main']; 
     $images_gallery_pg = $product['images_gallery'];
 
-    // Handle Main Image Update
+    
     if(isset($_FILES['image_main']) && $_FILES['image_main']['error'] == 0 && $_FILES['image_main']['size'] > 0){
         $ext = pathinfo($_FILES['image_main']['name'], PATHINFO_EXTENSION);
         $main_file_name = uniqid('main_').'.'.$ext;
         
         move_uploaded_file($_FILES['image_main']['tmp_name'], $upload_dir.$main_file_name);
         
-        // पाथ सेट करा (वेब रूट सापेक्ष)
+       
         $image_url_main = $BASE_UPLOAD_PATH . $main_file_name; 
-        // (Optional: old file delete logic)
+        
     }
 
-    // Handle Gallery Image Upload (Appending/Deleting from existing gallery)
-    
-    // 1. Decode current gallery data from DB (PostgreSQL array string to PHP array)
     $raw_pg_array = trim($product['images_gallery'] ?? '', '{}');
     $current_gallery_urls = array_filter(array_map('trim', explode(',', $raw_pg_array)));
     
-    // Remove surrounding quotes from each URL
-    $current_gallery_urls = array_map(function($url) { 
+    
+    $current_gallery_urls = 
+	array_map(function($url)
+	{ 
         return trim($url, '"');
     }, $current_gallery_urls);
     
-    // 🔴 STEP 1: Handle Deletion Requests 🔴
-    if (isset($_POST['delete_gallery_images']) && is_array($_POST['delete_gallery_images'])) {
+   
+    if (isset($_POST['delete_gallery_images']) && is_array($_POST['delete_gallery_images']))
+	{
         $images_to_delete = $_POST['delete_gallery_images'];
         
-        // Filter out URLs that are marked for deletion
-        $current_gallery_urls = array_filter($current_gallery_urls, function($url) use ($images_to_delete) {
-            // Only keep URLs that are NOT in the deletion list
+        
+        $current_gallery_urls = array_filter($current_gallery_urls, function($url) use ($images_to_delete)
+		{
+            
             return !in_array($url, $images_to_delete);
         });
-        // Note: Files are NOT physically deleted from server in this basic implementation.
+       
     }
-    // --------------------------------------
+   
     
     $new_gallery_urls = [];
     
     if(isset($_FILES['images_gallery']) && !empty(array_filter($_FILES['images_gallery']['name']))){
 
-        // 2. Upload new files and collect new URLs
-        foreach($_FILES['images_gallery']['tmp_name'] as $key => $tmp_name){
-            if($_FILES['images_gallery']['error'][$key] === 0 && $_FILES['images_gallery']['size'][$key] > 0){
+        
+        foreach($_FILES['images_gallery']['tmp_name'] as $key => $tmp_name)
+		{
+            if($_FILES['images_gallery']['error'][$key] === 0 && $_FILES['images_gallery']['size'][$key] > 0)
+			{
                 $ext = pathinfo($_FILES['images_gallery']['name'][$key], PATHINFO_EXTENSION);
                 $file_name = uniqid('gallery_').'.'.$ext;
                 
                 move_uploaded_file($tmp_name, $upload_dir.$file_name);
                 
-                // पाथ सेट करा (वेब रूट सापेक्ष)
+               
                 $new_gallery_urls[] = $BASE_UPLOAD_PATH . $file_name;
             }
         }
     }
     
-    // 3. Merge remaining old URLs with new uploaded URLs
+   
     $final_gallery_urls = array_merge($current_gallery_urls, $new_gallery_urls);
 
-    // 4. Prepare for PostgreSQL TEXT[] / Array Column
+    
     if ($final_gallery_urls) {
-        $quoted_urls = array_map(function($url) { 
+        $quoted_urls = 
+		array_map(function($url) 
+		{ 
             return '"' . str_replace('"', '\"', $url) . '"'; 
         }, $final_gallery_urls);
         
         $images_gallery_pg = '{' . implode(',', $quoted_urls) . '}';
     } else {
-        $images_gallery_pg = '{}'; // Empty array
+        $images_gallery_pg = '{}'; 
     }
-    // --------------------------------------
-
-    // Prepare Update Query
+    
     $query = "UPDATE products SET 
               name = :name, description = :description, price = :price, 
               weight_grams = :weight_grams, metal_type = :metal_type, design_style = :design_style, 
@@ -133,7 +132,7 @@ if (isset($_POST['update_product'])) {
               image_url_main = :image_url_main, images_gallery = :images_gallery, stock_quantity = :stock_quantity
               WHERE product_id = :id";
     
-    // FIX: $pdo chya jagi $conn vaparala
+    
     $stmt = $conn->prepare($query); 
     $stmt->bindParam(':id', $product_id, PDO::PARAM_INT);
     $stmt->bindParam(':name', $name);
@@ -153,8 +152,7 @@ if (isset($_POST['update_product'])) {
         $stmt->execute();
         $msg = "<p class='success'>✅ Product ID $product_id updated successfully! <a href='view_products.php'>View Products</a></p>";
         
-        // Refetch updated data to populate the form correctly after update
-        // FIX: $pdo chya jagi $conn vaparala
+        
         $stmt = $conn->prepare("SELECT * FROM products WHERE product_id = :id");
         $stmt->bindParam(':id', $product_id, PDO::PARAM_INT);
         $stmt->execute();
@@ -261,7 +259,7 @@ if (isset($_POST['update_product'])) {
             <label style="margin-top:25px;">Current Gallery Images:</label>
             <div class="image-preview">
                 <?php 
-                // Logic to display current PostgreSQL Array URLs 
+                
                 $raw_pg_array = trim($product['images_gallery'] ?? '', '{}');
                 $gallery_urls_display = array_filter(array_map('trim', explode(',', $raw_pg_array)));
                 $gallery_urls_display = array_map(function($url) { return trim($url, '"'); }, $gallery_urls_display); // Clean up quotes

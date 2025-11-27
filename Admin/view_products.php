@@ -1,17 +1,15 @@
 <?php
-// Note: Assuming 'db.php' returns $conn (PDO connection object).
 
-// File path tumchya folder structure pramane barobar theva
 include("../project/db.php");
 
 
-// Initialize message variable
+
 $msg = '';
 
-// Handle Delete Request
+
 if(isset($_GET['delete'])){
     $id = $_GET['delete'];
-    // FIX: $pdo chya jagi $conn vaparala (Non-breaking space removed)
+   
     $stmt = $conn->prepare("DELETE FROM products WHERE product_id = :id");
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     try {
@@ -22,8 +20,7 @@ if(isset($_GET['delete'])){
     }
 }
 
-// Fetch products
-// FIX: $pdo chya jagi $conn vaparala
+
 $stmt = $conn->query("SELECT product_id, name, metal_type, price, stock_quantity, is_trending, image_url_main, images_gallery FROM products ORDER BY product_id ASC");
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -206,15 +203,14 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <td>
                                 <div class="gallery-panel">
                                     <?php 
-                                    // FIX: PostgreSQL Array String parser use kela
+                                   
                                     $raw_pg_array = trim($product['images_gallery'] ?? '', '{}');
                                     $gallery_urls = array_filter(array_map('trim', explode(',', $raw_pg_array)));
                                     $gallery_urls = array_map(function($url) { return trim($url, '"'); }, $gallery_urls); // Clean up quotes
                                     
-                                    // Check if decoding was successful and it's a non-empty array
                                     if (is_array($gallery_urls) && count($gallery_urls) > 0): 
                                         foreach ($gallery_urls as $url): 
-                                            // Ensure URL is not empty before displaying
+                                            
                                             if (!empty($url)):
                                                 ?>
                                                 <img src="<?php echo htmlspecialchars(trim($url)); ?>" alt="Gallery Image" title="Gallery Image" />

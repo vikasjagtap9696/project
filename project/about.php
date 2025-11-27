@@ -1,9 +1,5 @@
 <?php
-// about_us.php
 
-// You might include your standard header and footer files here
-// session_start();
-// include('header.php'); 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,9 +9,7 @@
     <title>About Us | SuvarnaKart</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* -------------------------------------------------- */
-        /* GENERAL STYLES (MATCHING PROFILE.PHP THEME) */
-        /* -------------------------------------------------- */
+        
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
@@ -52,9 +46,7 @@
             padding: 0 20px;
         }
 
-        /* -------------------------------------------------- */
-        /* ABOUT US SPECIFIC STYLES */
-        /* -------------------------------------------------- */
+       
         .about-section {
             background: white;
             padding: 50px;

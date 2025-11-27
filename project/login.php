@@ -1,8 +1,8 @@
 <?php
 session_start();
-include('db.php'); // PDO connection
+include('db.php'); 
 
-// Function to sanitize input
+
 function clean($data)
 {
     return trim(htmlspecialchars($data));
@@ -10,7 +10,7 @@ function clean($data)
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // -------- LOGIN --------
+    
     if (isset($_POST['login'])) {
         $email = clean($_POST['email'] ?? '');
         $password = clean($_POST['password'] ?? '');
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // -------- REGISTER --------
+   
     if (isset($_POST['register'])) {
         $username = clean($_POST['username'] ?? '');
         $email = clean($_POST['email'] ?? '');
@@ -59,12 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 $_SESSION['register_success'] = "Registration successful. Please login!";
-                $_SESSION['active_register'] = true; // keep register form active
+                $_SESSION['active_register'] = true; 
             }
         }
     }
 
-    header("Location: login.php"); // redirect back to self
+    header("Location: login.php"); 
     exit;
 }
 ?>
