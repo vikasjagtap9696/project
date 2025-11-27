@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($user === 'vikasjagtap.9996@gmail.com' && password_verify($password, $user['password_hash']) ==='@Vikas123') {
-                header("Location: admin/admin_dashboard.php");  // Admin panel
+                header("Location: ../admin/admin_dashboard.php");  // Admin panel
                 exit;
             } 
 
