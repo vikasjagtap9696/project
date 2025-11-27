@@ -86,6 +86,46 @@ CREATE TABLE IF NOT EXISTS favorites (
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, product_id)
 );
+INSERT INTO products 
+(name, description, price, weight_grams, metal_type, design_style, occasion,
+ is_trending, collection_key, image_url_main, images_gallery, stock_quantity)
+VALUES
+('Product 1', NULL, 0, NULL, 'Gold', 'Daily Wear', NULL,
+ TRUE, '',
+ '../uploads/rings1_1.webp',
+ ARRAY['../uploads/rings1_2.webp','../uploads/rings1_3.webp'],
+ 10),
+
+('Product 2', NULL, 0, NULL, 'Gold', 'Modern Wear', NULL,
+ FALSE, 'Bestsellers',
+ '../uploads/rings3_1.jpg',
+ ARRAY['../uploads/rings3_2.jpg','../uploads/rings3_3.jpg'],
+ 10),
+
+('Product 3', NULL, 0, NULL, 'Gold', 'Casual Wear', 'Festive',
+ TRUE, '',
+ '../uploads/rings2_1.webp',
+ ARRAY['../uploads/rings2_2.webp','../uploads/rings2_3.webp'],
+ 10),
+
+('Product 4', NULL, 0, NULL, 'Gold', 'Modern Wear', NULL,
+ FALSE, 'Bestsellers',
+ '../uploads/Chain1_1.webp',
+ ARRAY['../uploads/chain1_2.webp','../uploads/chain1_3.webp'],
+ 15),
+
+('Product 5', NULL, 0, NULL, 'Gold', 'Casual Wear', NULL,
+ FALSE, 'Bestsellers',
+ '../uploads/Bracelet1_1.webp',
+ ARRAY['../uploads/Bracelet1_2.webp','../uploads/Bracelet1_3.webp','../uploads/Bracelet1_4.webp'],
+ 15),
+
+('Product 6', NULL, 0, NULL, 'Gold', 'Festival', 'Wedding',
+ FALSE, '',
+ '../uploads/diamond_earing_1_1.webp',
+ ARRAY['../uploads/diamond_earing_1_2.webp'],
+ 20);
+
 
 ";
 
