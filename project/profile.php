@@ -37,9 +37,10 @@ if (isset($_GET['remove_fav']) && isset($_GET['product_id'])) {
 $stmt = $conn->prepare("SELECT * FROM users WHERE user_id=:id");
 $stmt->execute([':id' => $user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-$addresses = json_decode($user['address_book'], true) ?? [];
 $default_address = $addresses[0] ?? [];
+$address_book = !empty($user['address_book']) 
+    ? json_decode($user['address_book'], true) 
+    : [];
 
 
 $favorites = [];
