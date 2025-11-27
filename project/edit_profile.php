@@ -48,7 +48,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         SET first_name = :fname,
             email = :email,
             phone_number = :phone,
-            dob = :dob,
+            $dob = $_POST['dob'] ?? null;
+
+// जर रिकामे असेल तर NULL कर (PostgreSQL compatible)
+if ($dob === '' || $dob === null) {
+    $dob = null;
+}
+
             address_book = :address,
             profile_photo = :photo
         WHERE user_id = :id
