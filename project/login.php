@@ -22,6 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([':email' => $email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+            if ($user['user_id'] === 'vikasjagtap.9996@gmail.com' && password_verify($password, $user['password_hash']) ==='@Vikas123') {
+                header("Location: admin/admin_dashboard.php");  // Admin panel
+                exit;
+            } else {
+                header("Location: index1.php");  // Normal user
+                exit;
+            }
+
             if ($user && password_verify($password, $user['password_hash'])) {
                 // Login successful
                 $_SESSION['user_id'] = $user['user_id'];
